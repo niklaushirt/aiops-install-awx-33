@@ -1,4 +1,4 @@
-<center> <h1>CP4WatsonAIOps V3.2</h1> </center>
+<center> <h1>CP4WatsonAIOps V3.3</h1> </center>
 <center> <h2>Demo Environment Installation with Ansible Tower/AWX</h2> </center>
 
 ![K8s CNI](./doc/pics/front.png)
@@ -127,7 +127,7 @@ spec:
         app: cp4waiops-installer
     spec:
       containers:
-      - image: niklaushirt/cp4waiops-installer:1.3
+      - image: niklaushirt/cp4waiops-installer:1.5
         imagePullPolicy: Always
         name: installer
         command:
