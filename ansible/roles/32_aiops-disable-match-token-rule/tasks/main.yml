@@ -55,19 +55,40 @@
 
     echo "Disable Match Token RULE for Services..."
 
-    export result=$(curl -X "GET" "https://topology-merge-$WAIOPS_NAMESPACE.$CLUSTER_NAME/1.0/merge/rules?ruleType=matchTokensRule" --insecure \
+    export result=$(curl -X "GET" "https://topology-merge-$WAIOPS_NAMESPACE.$CLUSTER_NAME/1.0/merge/rules?_filter=name%3Dk8ServiceName&ruleType=matchTokensRule" --insecure \
         -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
         -H 'content-type: application/json' \
         -u $LOGIN)
     export ruleIDs=$(echo $result| jq "._items")
 
-    export ruleID=$(echo $ruleIDs| jq -r ".[1]._id")
+    export ruleID=$(echo $ruleIDs| jq -r ".[0]._id")
 
     curl -X "POST" "https://topology-merge-$WAIOPS_NAMESPACE.$CLUSTER_NAME/1.0/merge/rules/$ruleID/?ruleType=matchTokensRule" --insecure \
         -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
         -H 'content-type: application/json' \
         -u $LOGIN \
         -d '{"ruleStatus": "disabled"}'
+
+
+
+    echo "Disable Match Token RULE for Instana Services..."
+
+    export result=$(curl -X "GET" "https://topology-merge-$WAIOPS_NAMESPACE.$CLUSTER_NAME/1.0/merge/rules?_filter=name%3Dinstana-observer-events-kubernetes-service&ruleType=matchTokensRule" --insecure \
+        -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
+        -H 'content-type: application/json' \
+        -u $LOGIN)
+    export ruleIDs=$(echo $result| jq "._items")
+
+    export ruleID=$(echo $ruleIDs| jq -r ".[0]._id")
+
+    curl -X "POST" "https://topology-merge-$WAIOPS_NAMESPACE.$CLUSTER_NAME/1.0/merge/rules/$ruleID/?ruleType=matchTokensRule" --insecure \
+        -H 'X-TenantID: cfd95b7e-3bc7-4006-a4a8-a73a79c71255' \
+        -H 'content-type: application/json' \
+        -u $LOGIN \
+        -d '{"ruleStatus": "disabled"}'
+
   register: network_patch
   ignore_errors: yes
+
+
 

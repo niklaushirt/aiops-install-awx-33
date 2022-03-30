@@ -20,6 +20,7 @@
 - name: DOCUMENTATION -          🌏 Open Documentation
   shell: |
     open https://github.ibm.com/NIKH/aiops-install-ansible-fvt-33#3-ai-manager-configuration
+  ignore_errors: yes
 
 
 
