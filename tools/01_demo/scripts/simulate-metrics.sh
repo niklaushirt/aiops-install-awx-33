@@ -132,7 +132,7 @@ do
                   MY_FIX_VALUE=$(echo $value | cut -d',' -f4)
                   #echo ":"$MY_FIX_VALUE
                   if [[ $MY_FIX_VALUE == "ITERATIONS" ]]; then
-                        MY_FIX_VALUE=$(( BUNDLE_ITERATIONS+ITERATIONS*MAX_ITERATIONS_BUNDLE ))
+                        MY_FIX_VALUE=$(( BUNDLE_ITERATIONS*MAX_ITERATIONS_BUNDLE+ITERATIONS ))
                         #echo ":::::"$MY_FIX_VALUE
                   fi
                   MY_VARIATION=$(echo $value | cut -d',' -f5)
