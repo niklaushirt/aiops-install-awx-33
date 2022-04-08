@@ -235,7 +235,7 @@ export result=$(curl -X "POST" -s "https://$AWX_ROUTE/api/v2/job_templates/" -u 
     "job_type": "run",
     "inventory": '$INVENTORY_ID',
     "project": '$PROJECT_ID',
-    "playbook": "ansible/10_install-cp4waiops_ai_manager_only_with_demo.yaml",
+    "playbook": "ansible/01_AIManager-install.yaml",
     "scm_branch": "",
     "extra_vars": "",
     "execution_environment": '$EXENV_ID',
@@ -262,7 +262,7 @@ export result=$(curl -X "POST" -s "https://$AWX_ROUTE/api/v2/job_templates/" -u 
     "job_type": "run",
     "inventory": '$INVENTORY_ID',
     "project": '$PROJECT_ID',
-    "playbook": "ansible/11_install-cp4waiops_event_manager.yaml",
+    "playbook": "ansible/04_EventManager-install.yaml",
     "scm_branch": "",
     "extra_vars": "",
     "execution_environment": '$EXENV_ID',
@@ -289,7 +289,7 @@ export result=$(curl -X "POST" -s "https://$AWX_ROUTE/api/v2/job_templates/" -u 
     "job_type": "run",
     "inventory": '$INVENTORY_ID',
     "project": '$PROJECT_ID',
-    "playbook": "ansible/90_aiops-logins.yaml",
+    "playbook": "ansible/90_aiops-get-all-logins.yaml",
     "scm_branch": "",
     "extra_vars": "",
     "execution_environment": '$EXENV_ID'
@@ -340,7 +340,7 @@ export result=$(curl -X "POST" -s "https://$AWX_ROUTE/api/v2/job_templates/" -u 
     "job_type": "run",
     "inventory": '$INVENTORY_ID',
     "project": '$PROJECT_ID',
-    "playbook": "ansible/18_aiops-demo-ui.yaml",
+    "playbook": "ansible/16_aiops-install-demo-ui.yaml",
     "scm_branch": "",
     "extra_vars": "",
     "execution_environment": '$EXENV_ID'
@@ -367,7 +367,7 @@ export result=$(curl -X "POST" -s "https://$AWX_ROUTE/api/v2/job_templates/" -u 
     "job_type": "run",
     "inventory": '$INVENTORY_ID',
     "project": '$PROJECT_ID',
-    "playbook": "ansible/17_aiops-toolbox.yaml",
+    "playbook": "ansible/17_aiops-install-toolbox.yaml",
     "scm_branch": "",
     "extra_vars": "",
     "execution_environment": '$EXENV_ID'
@@ -631,7 +631,7 @@ fi
 #     "job_type": "run",
 #     "inventory": '$INVENTORY_ID',
 #     "project": '$PROJECT_ID',
-#     "playbook": "ansible/15_install-ldap.yaml",
+#     "playbook": "ansible/11_install-ldap-server.yaml",
 #     "scm_branch": "",
 #     "extra_vars": "",
 #     "execution_environment": '$EXENV_ID'
@@ -685,7 +685,7 @@ fi
 #     "job_type": "run",
 #     "inventory": '$INVENTORY_ID',
 #     "project": '$PROJECT_ID',
-#     "playbook": "ansible/16_install-robot-shop.yaml",
+#     "playbook": "ansible/13_install-robot-shop.yaml",
 #     "scm_branch": "",
 #     "extra_vars": "",
 #     "execution_environment": '$EXENV_ID'
@@ -710,7 +710,7 @@ fi
 #     "job_type": "run",
 #     "inventory": '$INVENTORY_ID',
 #     "project": '$PROJECT_ID',
-#     "playbook": "ansible/85_training-create.yaml",
+#     "playbook": "ansible/85_training-create-definitions.yaml",
 #     "scm_branch": "",
 #     "extra_vars": "",
 #     "execution_environment": '$EXENV_ID'
@@ -737,7 +737,7 @@ fi
 #     "job_type": "run",
 #     "inventory": '$INVENTORY_ID',
 #     "project": '$PROJECT_ID',
-#     "playbook": "ansible/86_training-load-logs.yaml",
+#     "playbook": "ansible/86_training-load-log-data.yaml",
 #     "scm_branch": "",
 #     "extra_vars": "",
 #     "execution_environment": '$EXENV_ID'
@@ -790,7 +790,7 @@ fi
 #     "job_type": "run",
 #     "inventory": '$INVENTORY_ID',
 #     "project": '$PROJECT_ID',
-#     "playbook": "ansible/86_training-load-snow.yaml",
+#     "playbook": "ansible/86_training-load-snow-data.yaml",
 #     "scm_branch": "",
 #     "extra_vars": "",
 #     "execution_environment": '$EXENV_ID'

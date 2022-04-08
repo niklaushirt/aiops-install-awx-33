@@ -32,7 +32,7 @@
 
 - hosts: localhost
   #become: true
-  vars_files: ./00_config_cp4waiops.yaml
+  vars_files: ../00_config_cp4waiops.yaml
 
   roles:  
 # Placeholder for customization
@@ -40,7 +40,8 @@
 
 # Initialize Logging
     - role: 00_init-logging
-
+    
+    - role: 00_pre_checks
 # Start block
     - role: 98-log-start-01
 

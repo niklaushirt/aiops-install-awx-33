@@ -92,7 +92,7 @@
         {
             "Node": "ratings-log",
             "NodeAlias": "ratings",
-            "Manager": "Humio",
+            "Manager": "elk",
             "AlertGroup": "robot-shop",
             "Severity": 4,
             "Summary": "[Log] Ratings - Alert Description: resource.name=ratings  (Error: unable to contact MYSQL failed with status code 500)",
@@ -110,7 +110,7 @@
         {
             "Node": "catalogue-log",
             "NodeAlias": "catalogue",
-            "Manager": "Humio",
+            "Manager": "elk",
             "AlertGroup": "robot-shop",
             "Severity": 3,
             "Summary": "[Log] Catalogue - Alert Description: resource.name=catalogue (Error: unable to contact http://ratings:9080/ratings got status of 503)",

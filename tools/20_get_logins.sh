@@ -53,7 +53,7 @@ export TEMP_PATH=~/aiops-install
 
 
 
-export WAIOPS_NAMESPACE=$(oc get po -A|grep aimanager-operator |awk '{print$1}')
+export WAIOPS_NAMESPACE=$(oc get po -A|grep aiops-orchestrator-controller |awk '{print$1}')
 export EVTMGR_NAMESPACE=$(oc get po -A|grep noi-operator |awk '{print$1}')
 
 CLUSTER_ROUTE=$(oc get routes console -n openshift-console | tail -n 1 2>&1 ) 
@@ -322,6 +322,26 @@ then
 fi
 
 
+ARGOCD_READY=$(oc get ns openshift-logging || true) 
+if [[ $ARGOCD_READY =~ "Active" ]]; 
+then
+      export ARGOCD_URL=$(oc get route -n  openshift-gitops  openshift-gitops-server -o jsonpath={.spec.host})
+      export ARGOCD_USER=admin
+      export ARGOCD_PWD=$(oc get secret -n openshift-gitops openshift-gitops-cluster -o "jsonpath={.data['admin\.password']}"| base64 --decode)
+
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    🚀 Connect to OpenShift GitOps to check your deployments"
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    -----------------------------------------------------------------------------------------------------------------------------------------------"
+      echo "    "
+      echo "    🌏 URL:      https://$ARGOCD_URL"
+      echo "  "
+      echo "    🧔 User:       $ARGOCD_USER"
+      echo "    🔐 Password:   $ARGOCD_PWD"
+      echo "  "
+      echo "  "
+fi
 
 
 
@@ -498,7 +518,6 @@ echo "    "
 echo "    "
 echo "    "
 echo "    "
-
 
 
 
