@@ -226,16 +226,16 @@ fi
 
 echo ""
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
-echo "   🚀  Create Job: Install CP4WAIOPS AI Manager with Demo content"
+echo "   🚀  Create Job: Install CP4WAIOPS AI Manager Only"
 export result=$(curl -X "POST" -s "https://$AWX_ROUTE/api/v2/job_templates/" -u "$ADMIN_USER:$ADMIN_PASSWORD" --insecure \
 -H 'content-type: application/json' \
 -d $'{
-    "name": "11_Install CP4WAIOPS AI Manager with Demo content",
-    "description": "Install CP4WAIOPS AI Manager with Demo content (LDAP, RobotShop)",
+    "name": "09_Install CP4WAIOPS AI Manager Only",
+    "description": "Install CP4WAIOPS AI Manager Only",
     "job_type": "run",
     "inventory": '$INVENTORY_ID',
     "project": '$PROJECT_ID',
-    "playbook": "ansible/01_AIManager-install.yaml",
+    "playbook": "ansible/09_AIManager-only.yaml",
     "scm_branch": "",
     "extra_vars": "",
     "execution_environment": '$EXENV_ID',
@@ -253,12 +253,12 @@ fi
 
 echo ""
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
-echo "   🚀  Create Job: Install CP4WAIOPS AI Event Manager"
+echo "   🚀  Create Job: Install CP4WAIOPS Event Manager"
 export result=$(curl -X "POST" -s "https://$AWX_ROUTE/api/v2/job_templates/" -u "$ADMIN_USER:$ADMIN_PASSWORD" --insecure \
 -H 'content-type: application/json' \
 -d $'{
-    "name": "12_Install CP4WAIOPS AI Event Manager",
-    "description": "11_Install CP4WAIOPS AI Event Manager",
+    "name": "04_Install CP4WAIOPS Event Manager",
+    "description": "04_Install CP4WAIOPS Event Manager",
     "job_type": "run",
     "inventory": '$INVENTORY_ID',
     "project": '$PROJECT_ID',
@@ -277,6 +277,36 @@ then
 else
     echo "        Job created: "$(echo $result|jq ".created")
 fi 
+
+
+
+echo ""
+echo "   ------------------------------------------------------------------------------------------------------------------------------"
+echo "   🚀  Create Job: Install CP4WAIOPS Infrastructure Management"
+export result=$(curl -X "POST" -s "https://$AWX_ROUTE/api/v2/job_templates/" -u "$ADMIN_USER:$ADMIN_PASSWORD" --insecure \
+-H 'content-type: application/json' \
+-d $'{
+    "name": "05_Install CP4WAIOPS Infrastructure Management",
+    "description": "05_Install CP4WAIOPS Infrastructure Management",
+    "job_type": "run",
+    "inventory": '$INVENTORY_ID',
+    "project": '$PROJECT_ID',
+    "playbook": "ansible/05_InfraManagement-install.yaml",
+    "scm_branch": "",
+    "extra_vars": "",
+    "execution_environment": '$EXENV_ID',
+    "ask_variables_on_launch": true,
+    "extra_vars": "---\nENTITLED_REGISTRY_KEY: CHANGEME"
+}
+')
+
+if [[ $result =~ " already exists" ]];
+then
+    echo "        Already exists."
+else
+    echo "        Job created: "$(echo $result|jq ".created")
+fi 
+
 
 echo ""
 echo "   ------------------------------------------------------------------------------------------------------------------------------"
