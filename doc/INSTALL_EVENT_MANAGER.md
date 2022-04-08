@@ -57,11 +57,11 @@ To get the token, see [here](#3.1.2-get-the-installation-token)
 Just run:
 
 ```bash
-./11_install_event_manager.sh -t <PULL_SECRET_TOKEN> [-v true]
+ansible-playbook ./ansible/04_EventManager-install.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 
 
 Example:
-./11_install_event_manager.sh -t eyJhbGciOiJIUzI1NiJ9.eyJpc3adsgJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE1Nzg0NzQzMjgsImp0aSI6IjRjYTM3gsdgdMzExNjQxZDdiMDJhMjRmMGMxMWgdsmZhIn0.Z-rqfSLJA-R-ow__tI3RmLx4mssdggdabvdcgdgYEkbYY
+ansible-playbook ./ansible/04_EventManager-install.yaml -e ENTITLED_REGISTRY_KEY=eyJhbGciOiJIUzI1NiJ9.eyJpc3adsgJJQk0gTWFya2V0cGxhY2UiLCJpYXQiOjE1Nzg0NzQzMjgsImp0aSI6IjRjYTM3gsdgdMzExNjQxZDdiMDJhMjRmMGMxMWgdsmZhIn0.Z-rqfSLJA-R-ow__tI3RmLx4mssdggdabvdcgdgYEkbYY
 ```
 
 This will install:
