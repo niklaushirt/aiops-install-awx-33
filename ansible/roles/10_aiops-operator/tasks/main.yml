@@ -110,6 +110,15 @@
 # --------------------------------------------------------------------------------------------------------------------------------------
 # Wait for CSV being ready
 # --------------------------------------------------------------------------------------------------------------------------------------
+- name: CHECK -              🕦 Wait for ibm-aiops-orchestrator to become ready
+  shell: oc get csv -n {{ WAIOPS_NAMESPACE }}|grep ibm-aiops-orchestrator|grep "Succeeded"| grep -v ibm-watson-aiops-ui-operator | grep -c ""
+  register: kubectl_get_pods
+  until: kubectl_get_pods.stdout == "1"
+  retries: 500
+  delay: 15
+
+
+
 - name: CHECK -              🕦 Wait for CSVs to become ready
   shell: oc get csv -n {{ WAIOPS_NAMESPACE }}|grep -v "Succeeded"| grep -v ibm-watson-aiops-ui-operator | grep -c ""
   register: kubectl_get_pods
