@@ -1,11 +1,10 @@
-<center> <h1>CP4WatsonAIOps V3.3</h1> </center>
-<center> <h2>Demo Environment Installation with Ansible Tower/AWX</h2> </center>
+<center> <h1>CP4WatsonAIOps CP4WAIOPS v3.3</h1> </center>
+<center> <h2>Demo Environment Installation - Short Track 🚀</h2> </center>
 
 ![K8s CNI](./doc/pics/front.png)
 
 
 <center> ©2022 Niklaus Hirt / IBM </center>
-
 
 
 <div style="page-break-after: always;"></div>
@@ -15,143 +14,183 @@
 Please drop me a note on Slack or by mail nikh@ch.ibm.com if you find glitches or problems.
 
 
-# Changes
 
-| Date  | Description  | Files  | 
-|---|---|---|
-|  02.01.2022 | First Draft |  |
+
 
 <div style="page-break-after: always;"></div>
-
-
 
 ---------------------------------------------------------------
 # Installation
 ---------------------------------------------------------------
 
-1. [Easy Install](#-1-easy-install)
-1. [Provide Entitlement](#2-provide-entitlement)
-1. [Installing Components](#3-installing-components)
-	1. [Install AI Manager](#31-installing-ai-manager)
-	1. [Install Event Manager](#32-installing-event-manager)
-	1. [Installing Turbonomic](#33-installing-turbonomic)
-	1. [Installing ELK](#34-installing-elk)
-	1. [Installing Humio](#35-installing-humio)
-	1. [Installing ServiceMest/Istio](#36-installing-servicemesh)
-	1. [Installing AWX/AnsibleTower](#37-installing-awx)
-	1. [Installing ManageIQ](#38-installing-manageiq
-)
-1. [AI Manager Configuration](#4-ai-manager-configuration)
-1. [Event Manager Configuration](#5-event-manager-configuration)
-1. [Runbook Configuration](#6-runbook-configuration)
-1. [Demo the Solution](#7-demo-the-solution)
-1. [Additional Configuration](#8-additional-configuration)
-1. [Troubleshooting](#9-troubleshooting)
-1. [Uninstall CP4WAIOPS](#10-uninstall)
-1. [Service Now integration](#11-service-now-integration)
-1. [Annex](#12-annex)
+## 🚀 Demo Installation
 
+Those are the steps that you have to execute to install a complete demo environment:
+
+1. [AI Manager Installation](#2-ai-manager-installation)
+1. [AI Manager Configuration](#3-ai-manager-configuration)
+1. [Slack integration](#4-slack-integration)
+1. [Demo the Solution](#5-demo-the-solution)
 
 > ❗You can find a PDF version of this guide here: [PDF](./INSTALL_CP4WAIOPS.pdf).
+> 
+
+### 🚨🚨🚨🚨 📺 Here is a video that walks you through the complete [installation process](https://ibm.box.com/s/nn9731pjbbjq0i79o89zyr1v3kovfaxm).
+
+## 🚀 TLDR - Fast Track
+
+These are the high level steps that you need to execute to install the demo environment
+
+1. Install AI Manager
+
+	```bash
+	ansible-playbook ./ansible/00_aimanager-install-all.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
+	```
+
+1. [AI Manager Configuration](#3-ai-manager-configuration)
+1. [Slack integration](#4-slack-integration)
+
+<div style="page-break-after: always;"></div>
+
+## ℹ️ In-depth documentation
+
+* Info
+	* [Changelog](./doc/CHANGELOG.md)
+	* [Demo Architecture](./doc/ARCHITECTURE.md)
+	* [Detailed Prerequisites](./doc/PREREQUISITES.md)
+	* [Troubleshooting](./doc/TROUBLESHOOTING.md)
+* Installation
+	* [Event Manager Install](./doc/INSTALL_EVENT_MANAGER.md)
+	* [Event Manager Configuration](./doc/CONF_EVENT_MANAGER.md)
+	* [Manual AI Manager Install](./doc/INSTALL_AI_MANAGER.md)
+	* [Uninstall CP4WAIOPS](./doc/UNINSTALL.md)
+* Configuration
+	* [Manual Runbook Configuration](./doc/CONF_RUNBOOKS.md)
+	* [Additional Configuration](./doc/CONF_MISC.md)
+	* [Service Now integration](./doc/INTEGRATION_SNOW.md)
+	* [Manually train the models](./doc/TRAINING_MANUAL.md)
+* Install additional components
+	* [Installing Turbonomic](./doc/INSTALL_TURBONOMIC.md)
+	* [Installing ELK ](./doc/INSTALL_ELK.md)
+	* [Installing Humio](./doc/INSTALL_HUMIO.md)
+	* [Installing ServiceMesh/Istio](./doc/INSTALL_SERVICE_MESH.md)
+	* [Installing AWX/AnsibleTower](./doc/INSTALL_AWX.md)
+
+
+
+
+<div style="page-break-after: always;"></div>
+
+---------------------------------------------------------------
+# 1 Introduction
+---------------------------------------------------------------
+
+
+This document is a short version of the full [README](./README_FULL.md) 🐥 that contains only the essential steps.
+
+
+
+This is provided `as-is`:
+
+* I'm sure there are errors
+* I'm sure it's not complete
+* It clearly can be improved
+
+
+**❗This has been tested for the new CP4WAIOPS v3.3 release on OpenShift 4.8 on ROKS**
+
+
+
+
+So please if you have any feedback contact me 
+
+- on Slack: @niklaushirt or
+- by Mail: nikh@ch.ibm.com
+
 
 <div style="page-break-after: always;"></div>
 
 
 
-
-
 ---------------------------------------------------------------
-# 🚀 1 Easy Install
+# 2 AI Manager Installation
 ---------------------------------------------------------------
 
-This installation method uses AWX (Open Source Ansible Tower) to install CP4WAIOPS and it's components.
-
-## 1.1 Platform Install - AWX
 
 
-Please create the following two elements in your OCP cluster.
+
+## 2.1 Get the code 
+
+Clone the GitHub Repository
+
+From IBM internal:
+
+```
+git clone https://<YOUR GIT TOKEN>@github.ibm.com/NIKH/aiops-install-ansible-fvt-33.git 
+```
+
+Or my external repo (this is updated less often than the IBM internal one):
+
+```
+git clone https://github.com/niklaushirt/cp4waiops-public.git
+```
 
 
-### 1.1.1 Command Line install
+## 2.2 Prerequisites 
 
-You can run run:
+### 2.2.1 OpenShift requirements 
+
+I installed the demo in a ROKS environment.
+
+You'll need:
+
+- ROKS 4.8
+- 5x worker nodes Flavor `b3c.16x64` (so 16 CPU / 64 GB) 
+
+You **might** get away with less if you don't install some components (Event Manager, ELK, Turbonomic,...) but no guarantee:
+
+- Typically 4x worker nodes Flavor `b3c.16x64` _**for only AI Manager**_
+
+<div style="page-break-after: always;"></div>
+
+### 2.2.2 Tooling 
+
+You need the following tools installed in order to follow through this guide:
+
+- ansible
+- oc (4.7 or greater)
+- jq
+- kafkacat (only for training and debugging)
+- elasticdump (only for training and debugging)
+- IBM cloudctl (only for LDAP)
+
+
+
+#### 2.2.1 On Mac - Automated (preferred) 
+
+Just run:
 
 ```bash
-oc apply -n default -f create-installer.yaml
-
-or
-
-kubectl apply -n default -f create-installer.yaml
-
+./10_install_prerequisites_mac.sh
 ```
+
+#### 2.2.2 On Ubuntu - Automated (preferred) 
+
+Just run:
+
+```bash
+./11_install_prerequisites_ubuntu.sh
+```
+
+ 
 
 <div style="page-break-after: always;"></div>
 
-### 1.1.2 Web UI install
+## 2.3 Pull Secrets 
 
-Or you can create them through the OCP Web UI:
 
-```yaml
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: installer-default-default
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-  - kind: ServiceAccount
-    name: default
-    namespace: default
-```
 
-<div style="page-break-after: always;"></div>
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: cp4waiops-installer
-  namespace: default
-  labels:
-      app: cp4waiops-installer
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: cp4waiops-installer
-  template:
-    metadata:
-      labels:
-        app: cp4waiops-installer
-    spec:
-      containers:
-      - image: niklaushirt/cp4waiops-installer:1.5
-        imagePullPolicy: Always
-        name: installer
-        command:
-        ports:
-        - containerPort: 22
-        resources:
-          requests:
-            cpu: "50m"
-            memory: "50Mi"
-          limits:
-            cpu: "250m"
-            memory: "250Mi"
-        env:
-          - name: INSTALL_REPO
-            value : "https://github.com/niklaushirt/aiops-install-awx-33.git"
-```
-
-<div style="page-break-after: always;"></div>
-
----------------------------------------------------------------
-# 2 Provide Entitlement
----------------------------------------------------------------
-
-## 2.1 Get the CP4WAIOPS installation token
+### 2.3.1 Get the CP4WAIOPS installation token 
 
 You can get the installation (pull) token from [https://myibm.ibm.com/products-services/containerlibrary](https://myibm.ibm.com/products-services/containerlibrary).
 
@@ -160,860 +199,629 @@ This allows the CP4WAIOPS images to be pulled from the IBM Container Registry.
 <div style="page-break-after: always;"></div>
 
 
-## 2.2 Enter the CP4WAIOPS installation token
 
-1. Open the AWX instance
-2. Select `Inventories`
-3. Select `CP4WAIOPS Install`
-	![K8s CNI](./doc/pics/entitlement1.png)
-4. Click Edit
-5. Replace and uncomment the `ENTITLED_REGISTRY_KEY` 
-	![K8s CNI](./doc/pics/entitlement2.png)
-6. Click Save
+## 2.4 Install AI Manager 
 
 
-Yop are now ready to lauch the installations.
-
-<div style="page-break-after: always;"></div>
-
----------------------------------------------------------------
-# 3 Installing Components
----------------------------------------------------------------
-
-The following Components can be installed:
+### 2.4.1 Start AI Manager Installation 
 
 
-| Category| Component  | Description  | 
-|---|---|---|
-| **CP4WAIOPS Base Install** |  |  |  
-|| **10_InstallCP4WAIOPSAIManagerwithDemoContent** | Base AI Manager with RobotShop and LDAP integration | 
-|| **11_InstallCP4WAIOPSAIEventManager** | Base Event Manager  |  
-|| | |  
-| **CP4WAIOPS Addons Install** |  | | 
-|| 17_InstallCP4WAIOPSToolbox | Debugging Toolbox | 
-|| 18_InstallCP4WAIOPSDemoUI | Demo UI to simulate incidents | 
-|| | |  
-| **Third-party** | | |  
-|| 20_InstallTurbonomic | | 
-|| 21_InstallHumio | | 
-|| 22_InstallAWX | | 
-|| 22_InstallELK | |  
-|| 24_InstallManageIQ | | 
-|| 29_InstallServiceMesh | |  
-|| | |  
-| **Topology** |  | |  
-|| 80_Topology Load for AI Manager | Load the custom RobotShop Topology into AI Manager ASM | 
-|| 81_Topology Load for Event Manager | Load the custom RobotShop Topology into Event Manager ASM | 
-|| | | 
-| **Training** |  | |  
-|| 84_Train All Models | Create all training definitions (LAD, TemporalGrouping, Similar Incidents, Change Risk), loads the training data end runs the training | 
-|| | | 
-| **Tools** | | |  
-|| 12_Get CP4WAIOPS Logins | Get Logins for all Components | 
-|| 91_DebugPatch | Repatch some errors (non destructive) | 
-|| 14_InstallRookCeph | |  
-
-
-
-<div style="page-break-after: always;"></div>
-
-## 3.1 Installing AI Manager 
-
-![K8s CNI](./doc/pics/awx1.png)
-
-
-### 3.1.1 Start AI Manager Installation 
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `10_InstallCP4WAIOPSAIManagerwithDemoContent` to install a base `AI Manager` instance.
-2. The Job will start with the installation
-
-	![K8s CNI](./doc/pics/awx2.png)
-
-2. Wait until the Job has finished 
-
-	![K8s CNI](./doc/pics/awx3.png)
-
-### 3.1.2 First Login 
-
-After successful installation, the the URL and the Login Information for your first connections can be found in the Job execution Log.
-
-
-You can also run `./tools/20_get_logins.sh` at any moment. This will print out all the relevant passwords and credentials (make sure your Terminal is logged into your Cluster).
-
-Usually it's a good idea to store this in a file for later use:
+1. Start the Easy Installer with the token from 2.3.1:
 
 ```bash
-./tools/20_get_logins.sh > my_credentials.txt
+./01_easy-install.sh -t <REGISTRY_TOKEN>
 ```
 
-<div style="page-break-after: always;"></div>
+2. Select option 🐥`00` to install the complete `AI Manager` demo environment.
 
-
-### 3.1.3 Configure AI Manager 
-
-There are some minimal configurations that you have to do to use the demo system and that are covered by the following flow:
-
-###   🚀 Start here [Create Kubernetes Observer](#4-ai-manager-configuration)
-
-Just click and follow the 🚀 and execute all the steps.
-
-> ### Minimal Configuration
-> 
-> Those are the minimal configurations you'll need to demo the system and that are covered by the flow above.
-> 
-> **Configure Topology**
-> 
-> 1. Create Kubernetes Observer
-> 1. Create REST Observer
-> 1. Create Topology 🚀
-> 1. Create AIOps Application
-> 
-> **Models Training**
-> 
-> 1. Train the Models 🚀
-> 1. Create Integrations
-> 
-> **Configure Slack**
-> 
-> 1. Setup Slack
-> 1. Adapt Web Certificates
-> 
-> **Configure Logins**
-> 
-> 1. Configure LDAP Logins
-
-
-<div style="page-break-after: always;"></div>
+> there are options to install only vanilla 'AI Manager'
 
 
 
-
-## 3.2 Installing Event Manager 
-
-
-### 3.2.1 Start Event Manager Installation 
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `11_Install CP4WAIOPS AI Event Manager` to install a base `Event Manager` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
-
-
-### 3.2.2 First Login 
-
-After successful installation, the the URL and the Login Information for your first connections can be found in the Job execution Log.
-
-
-You can also run `./tools/20_get_logins.sh` at any moment. This will print out all the relevant passwords and credentials (make sure your Terminal is logged into your Cluster).
-
-Usually it's a good idea to store this in a file for later use:
+Or directly run:
 
 ```bash
-./tools/20_get_logins.sh > my_credentials.txt
+ansible-playbook ./ansible/00_aimanager-install-all.yaml -e ENTITLED_REGISTRY_KEY=<REGISTRY_TOKEN> 
 ```
 
-<div style="page-break-after: always;"></div>
+> This takes about one to two hours.
+> After completion Easy Installer will exit, open the documentation and the AI Manager webpage (on Mac) and you'll have to to perform the last manual steps.
 
-
-### 3.2.3 Configure Event Manager 
-
-There are some minimal configurations that you have to do to use the demo system and that are covered by the following flow:
-
-###   🚀 Start here [Create Kubernetes Observer](#51-create-kubernetes-observer-for-event-manager)
-
-
-Just click and follow the 🚀 and execute all the steps.
-
-> ### Minimal Configuration
+> You now have a full, basic installtion of AI Manager with:
 > 
-> Those are the minimal configurations you'll need to demo the system and that are covered by the flow above.
-> 
-> **Configure Topology**
-> 
-> 1. Create Kubernetes Observer
-> 1. Create REST Observer
-> 1. Create Topology (🚀 - Option 51)
-> 
-> **Configure Integrations**
-> 
-> 1. EventManager Webhook 
-> 
->  **Configure Customization**
-> 
-> 1. Create custom Filter 
-> 1. Create custom View 
-> 1. Create grouping Policy 
-> 1. Create EventManager/NOI Menu item - Open URL 
-
+>  - AI Manager
+>  - Open LDAP
+>  - RobotShop demo application
+>  - Trained Models based on precanned data (Log- and Metric Anomalies, Similar Incidents, Change Risk)
+>  - Topologies for demo scenarios
+>  - AWX (OpenSource Ansible Tower) with runbooks for the demo scenarios
+>  - Demo UI
+>  
 
 
 <div style="page-break-after: always;"></div>
 
-## 3.3 Installing Turbonomic 
+## 2.5 Configure AI Manager 
 
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `20_Install Turbonomic` to install a base `Turbonomic` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
+There are some minimal needed configurations that you have to do to fully configure the demo environment.
+Those are covered in the following chapters.
 
-
-## 3.4 Installing ELK 
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `22_Install ELK` to install a base `ELK` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
+### Minimal Configuration
+ 
+Those are the manual configurations you'll need to demo the system and that are covered by the flow above.
+ 
+ 
+**Basic Configuration**
+ 
+1. Configure LDAP Logins
 
 
-## 3.5 Installing Humio 
+**Advanced Configuration**
 
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `21_Install Humio` to install a base `Humio` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
+1. Enable Story creation Policy
+1. Create AWX Connection
+1. Create Runbook Policy
 
+**Configure Topology**
+ 
+1. Re-Run Kubernetes Observer
 
-## 3.6 Installing ServiceMesh 
+**Configure Slack**
+ 
+1. Setup Slack
 
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `11_Install CP4WAIOPS AI Event Manager` to install a base `ServiceMesh` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
-
-<div style="page-break-after: always;"></div>
-
-## 3.7 Installing AWX 
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `29_Install ServiceMesh` to install a base `AWX` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
-
-## 3.8 Installing ManageIQ 
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `24_Install ManageIQ` to install a base `ManageIQ` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
-
-<div style="page-break-after: always;"></div>
-
+ <div style="page-break-after: always;"></div>
+ 
 ---------------------------------------------------------------
-# 4 AI Manager Configuration
+# 3. AI Manager Configuration 
 ---------------------------------------------------------------
 
-
-## 4.1 Configure Applications and Topology
-
-### 4.1.1 Create Kubernetes Observer for the Demo Applications 
-
-Do this for your applications (RobotShop by default)
-
-* In the `AI Manager` "Hamburger" Menu select `Operate`/`Data and tool integrations`
-* Click `Add connection`
-* Under `Kubernetes`, click on `Add Integration`
-* Click `Connect`
-* Name it `RobotShop`
-* Data Center `demo`
-* Click `Next`
-* Choose `local` for Connection Type
-* Set `Hide pods that have been terminated` to `On`
-* Set `Correlate analytics events on the namespace groups created by this job` to `On`
-* Set Namespace to `robot-shop`
-* Click `Next`
-* Click `Done`
+> ❗ Make sure the playbook `00` has completed before continuing
 
 
+> You have to do the following:
+> 
+> 1. Login to AI Manager
+> 1. Add LDAP Logins to CP4WAIOPS
+> 1. Enable Story creation Policy
+> 1. Publish Runbook
+> 1. Create Runbook Policy 
+> 1. Re-Run Kubernetes Observer
+> 1. Now you can create the Slack Integration
 
 
-### 4.1.2 Create REST Observer to Load Topologies 
+## 3.1 First Login
 
-* In the `AI Manager` "Hamburger" Menu select `Operate`/`Data and tool integrations`
-* Click `Add connection`
-* On the left click on `Topology`
-* On the top right click on `You can also configure, schedule, and manage other observer jobs` 
-* Click on  `Add a new Job`
-* Select `REST`/ `Configure`
-* Choose “bulk_replace”
-* Set Unique ID to “listenJob” (important!)
-* Set Provider to whatever you like (usually I set it to “listenJob” as well)
-* `Save`
+After successful installation, the Playbook creates a file `./LOGINS.txt` in your installation directory.
+
+> ℹ️ You can also run `./tools/20_get_logins.sh` at any moment. This will print out all the relevant passwords and credentials.
 
 
+* Open the `LOGINS.txt` file that has been created by the Installer in your root directory
+	![K8s CNI](./doc/pics/doc54.png)
+* Open the URL from the `LOGINS.txt` file
+* Click on `IBM provided credentials (admin only)`
 
+	![K8s CNI](./doc/pics/doc53.png)
 
 <div style="page-break-after: always;"></div>
 
-### 4.1.3 🚀 Create Topology 
+* Login as `admin` with the password from the `LOGINS.txt` file
 
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `80_Topology Load` to install a base `AI Manager` instance.
+	![K8s CNI](./doc/pics/doc55.png)
 
-❗ Please manually re-run the Kubernetes Observer to make sure that the merge has been done.
-
-### 4.1.4 Create AIOps Application 
-
-#### Robotshop
-
-* In the `AI Manager` go into `Operate` / `Application Management` 
-* Click `Define Application`
-* Select `robot-shop` namespace
-* Click `Next`
-* Click `Next`
-* Name your Application (RobotShop)
-* If you like check `Mark as favorite`
-* Click `Define Application`
-
-
-
-
-<div style="page-break-after: always;"></div>
-
-## 4.2 Train the Models
-
-### 4.2.1 🚀 Training 
-
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `84_Training All Models` to install a base `AI Manager` instance.
-2. This will automatically:
-	- Load the training data
-	- Create the training definitions
-	- Launch the trainings
-
-This will be done for:
-
-- Log Anomaly Detection (Logs)
-- Temporal Grouping (Events)
-- Similar Incidents (Service Now)
-- Change Risk (Service Now)
-
-
-<div style="page-break-after: always;"></div>
-
-### 4.2.2 Create Integrations 
-
-#### 4.2.2.1 Create Kafka Humio Log Training Integration 
-
-* In the `AI Manager` "Hamburger" Menu select `Define`/`Data and tool integrations`
-* Click `Add connection`
-* Under `Kafka`, click on `Add Integration`
-* Click `Connect`
-* Name it `HumioInject`
-* Click `Next`
-* Select `Data Source` / `Logs`
-* Select `Mapping Type` / `Humio`
-* Paste the following in `Mapping` (the default is **incorrect**!:
-
-	```json
-	{
-	"codec": "humio",
-	"message_field": "@rawstring",
-	"log_entity_types": "kubernetes.namespace_name,kubernetes.container_hash,kubernetes.host,kubernetes.container_name,kubernetes.pod_name",
-	"instance_id_field": "kubernetes.container_name",
-	"rolling_time": 10,
-	"timestamp_field": "@timestamp"
-	}
-	```
-* Click `Next`
-* Toggle `Data Flow` to the `ON` position
-* Select `Live data for continuous AI training and anomaly detection`
-* Click `Save`
-
-
-<div style="page-break-after: always;"></div>
-
-#### 4.2.2.2 Create Kafka Netcool Training Integration 
-
-* In the `AI Manager` "Hamburger" Menu select `Operate`/`Data and tool integrations`
-* Click `Add connection`
-* Under `Kafka`, click on `Add Integration`
-* Click `Connect`
-* Name it `EvetnManager`
-* Click `Next`
-* Select `Data Source` / `Events`
-* Select `Mapping Type` / `NOI`
-* Click `Next`
-* Toggle `Data Flow` to the `ON` position
-* Click `Save`
-
-
-
+	
 <div style="page-break-after: always;"></div>
 
 
-### 4.3 Slack integration
-
-
-### 4.3.1 Initial Slack Setup 
-
-For the system to work you need to setup your own secure gateway and slack workspace. It is suggested that you do this within the public slack so that you can invite the customer to the experience as well. It also makes it easier for is to release this image to Business partners
-
-You will need to create your own workspace to connect to your instance of CP4WAOps.
-
-Here are the steps to follow:
-
-1. [Create Slack Workspace](./doc/slack/1_slack_workspace.md)
-1. [Create Slack App](./doc/slack/2_slack_app_create.md)
-1. [Create Slack Channels](./doc/slack/3_slack_channel.md)
-1. [Create Slack Integration](./doc/slack/4_slack_integrate.md)
-1. [Get the Integration URL - Public Cloud - ROKS](./doc/slack/5_slack_url_public.md) OR 
-1. [Get the Integration URL - Private Cloud - Fyre/TEC](./doc/slack/5_slack_url_private.md)
-1. [Create Slack App Communications](./doc/slack/6_slack_app_integration.md)
-1. [Prepare Slack Reset](./doc/slack/7_slack_reset.md)
-
-
-<div style="page-break-after: always;"></div>
-
-### 4.3.2 Create valid CP4WAIOPS Certificate 
-
-
-In order for Slack integration to work, there must be a signed certicate on the NGNIX pods. The default certificate is self-signed and Slack will not accept that. The method for updating the certificate has changed between AIOps v2.1 and V3.1.1. The NGNIX pods in V3.1.1 mount the certificate through a secret called `external-tls-secret` and that takes precedent over the certificates staged under `/user-home/_global_/customer-certs/`.
-
-For customer deployments, it is required for the customer to provide their own signed certificates. An easy workaround for this is to use the Openshift certificate when deploying on ROKS. **Caveat**: The CA signed certificate used by Openshift is automatically cycled by ROKS (I think every 90 days), so you will need to repeat the below once the existing certificate is expired and possibly reconfigure Slack.
 
 
 
-This method replaces the existing secret/certificate with the one that OpenShift ingress uses, not altering the NGINX deployment. An important note, these instructions are for configuring the certificate post-install. Best practice is to follow the installation instructions for configuring certificates during that time.
-
-<div style="page-break-after: always;"></div>
-
-### 4.3.2.1 Patch AutomationUIConfig
-
-The custom resource `AutomationUIConfig/iaf-system` controls the certificates and the NGINX pods that use those certificates. Any direct update to the certificates or pods will eventually get overwritten, unless you first reconfigure `iaf-system`. It's a bit tricky post-install as you will have to recreate the `iaf-system` resource quickly after deleting it, or else the installation operator will recreate it. For this reason it's important to run all the commands one after the other. **Ensure that you are in the project for AIOps**, then paste all the code on your command line to replace the `iaf-system` resource.
-
-```bash
-NAMESPACE=$(oc project -q)
-IAF_STORAGE=$(oc get AutomationUIConfig -n $NAMESPACE -o jsonpath='{ .items[*].spec.storage.class }')
-oc get -n $NAMESPACE AutomationUIConfig iaf-system -oyaml > iaf-system-backup.yaml
-oc delete -n $NAMESPACE AutomationUIConfig iaf-system
-cat <<EOF | oc apply -f -
-apiVersion: core.automation.ibm.com/v1beta1
-kind: AutomationUIConfig
-metadata:
-  name: iaf-system
-  namespace: $NAMESPACE
-spec:
-  description: AutomationUIConfig for cp4waiops
-  license:
-    accept: true
-  version: v1.0
-  storage:
-    class: $IAF_STORAGE
-  tls:
-    caSecret:
-      key: ca.crt
-      secretName: external-tls-secret
-    certificateSecret:
-      secretName: external-tls-secret
-EOF
-```
-
-<div style="page-break-after: always;"></div>
-
-#### 4.3.2.2 NGNIX Certificate
-
-Again, **ensure that you are in the project for AIOps** and run the following to replace the existing secret with a secret containing the OpenShift ingress certificate.
-
-```bash
-WAIOPS_NAMESPACE =$(oc project -q)
-# collect certificate from OpenShift ingress
-ingress_pod=$(oc get secrets -n openshift-ingress | grep tls | grep -v router-metrics-certs-default | awk '{print $1}')
-oc get secret -n openshift-ingress -o 'go-template={{index .data "tls.crt"}}' ${ingress_pod} | base64 -d > cert.crt
-oc get secret -n openshift-ingress -o 'go-template={{index .data "tls.key"}}' ${ingress_pod} | base64 -d > cert.key
-oc get secret -n $WAIOPS_NAMESPACE iaf-system-automationui-aui-zen-ca -o 'go-template={{index .data "ca.crt"}}'| base64 -d > ca.crt
-# backup existing secret
-oc get secret -n $WAIOPS_NAMESPACE external-tls-secret -o yaml > external-tls-secret$(date +%Y-%m-%dT%H:%M:%S).yaml
-# delete existing secret
-oc delete secret -n $WAIOPS_NAMESPACE external-tls-secret
-# create new secret
-oc create secret generic -n $WAIOPS_NAMESPACE external-tls-secret --from-file=ca.crt=ca.crt --from-file=cert.crt=cert.crt --from-file=cert.key=cert.key --dry-run=client -o yaml | oc apply -f -
-#oc create secret generic -n $WAIOPS_NAMESPACE external-tls-secret --from-file=cert.crt=cert.crt --from-file=cert.key=cert.key --dry-run=client -o yaml | oc apply -f -
-# scale down nginx
-REPLICAS=2
-oc scale Deployment/ibm-nginx --replicas=0
-# scale up nginx
-sleep 3
-oc scale Deployment/ibm-nginx --replicas=${REPLICAS}
-rm external-tls-secret
-```
 
 
-Wait for the nginx pods to come back up
 
-```bash
-oc get pods -l component=ibm-nginx
-```
+## 3.2 Add LDAP Logins to CP4WAIOPS 
 
-When the integration is running, remove the backup file
-
-```bash
-rm ./iaf-system-backup.yaml
-```
-
-And then restart the Slack integration Pod
-
-```bash
-oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep slack|awk '{print$1}') -n $WAIOPS_NAMESPACE --grace-period 0 --force
-```
-
-The last few lines scales down the NGINX pods and scales them back up. It takes about 3 minutes for the pods to fully come back up.
-
-Once those pods have come back up, you can verify the certificate is secure by logging in to AIOps. Note that the login page is not part of AIOps, but rather part of Foundational Services. So you will have to login first and then check that the certificate is valid once logged in. If you want to update the certicate for Foundational Services you can find instructions [here](https://www.ibm.com/docs/en/cpfs?topic=operator-replacing-foundational-services-endpoint-certificates).
-
-<div style="page-break-after: always;"></div>
-
----------------------------------------------------------------
-## 4.4 Some Polishing
----------------------------------------------------------------
-
-### 4.4.1 Add LDAP Logins to CP4WAIOPS 
 
 
 * Go to `AI Manager` Dashboard
 * Click on the top left "Hamburger" menu
-* Select `User Management`
+* Select `Access Control`
+
+	![K8s CNI](./doc/pics/doc2.png)
+	
 * Select `User Groups` Tab
 * Click `New User Group`
+	![K8s CNI](./doc/pics/doc3.png)
+
 * Enter demo (or whatever you like)
+	![K8s CNI](./doc/pics/doc4.png)
+
 * Click Next
-* Select `LDAP Groups`
+* Select `Identity Provider Groups`
 * Search for `demo`
 * Select `cn=demo,ou=Groups,dc=ibm,dc=com`
+	![K8s CNI](./doc/pics/doc5.png)
+
 * Click Next
 * Select Roles (I use Administrator for the demo environment)
+
+	![K8s CNI](./doc/pics/doc7.png)
+	
 * Click Next
 * Click Create
-* 
+
+
+* Click on the top right image
+* Select `Logout`
+
+	![K8s CNI](./doc/pics/doc9.png)
+
+* Click  `Log In`
+
+	![K8s CNI](./doc/pics/doc10.png)
+
+<div style="page-break-after: always;"></div>
+
+* Select `Change your Authentication method`
+
+	![K8s CNI](./doc/pics/doc11.png)
+	
+* Select `Enterprise LDAP`
+
+	![K8s CNI](./doc/pics/doc12.png)
+	
+<div style="page-break-after: always;"></div>	
+* Login with the demo credentials
+	* 	User: demo
+	*  Password: P4ssw0rd!
+
+	![K8s CNI](./doc/pics/doc13.png)
+	
+<div style="page-break-after: always;"></div>
+
+
+
+
+
+
+## 3.3 Enable Story creation Policy
+
+
+
+* In the `AI Manager` "Hamburger" Menu select `Operate`/`Automations`
+* Under `Policies`
+* Select `Stories` from the `Tag` dropdown menu
+	![K8s CNI](./doc/pics/doc30.png)
+	
+* Enable `Default story creation policy for high severity alerts`
+* Also enable `Default story creation policy for all alerts` if you want to get all alerts grouped into a story
+	![K8s CNI](./doc/pics/doc31.png)
+	
+
+
+
+>❗ Wait for the playbook to complete before continuing
+
+<div style="page-break-after: always;"></div>
+
+
+
+
+## 3.4 Publish Runbooks 
+
+> ❗If you don't get any runbooks you can run the following to try to create them again: 
+> `
+> ansible-playbook ./ansible/45_aimanager-load-awx-playbooks-all.yaml
+> `
+
+
+* In the `AI Manager` "Hamburger" Menu select `Operate`/`Automations`
+* Select `Runbooks` tab
+* For the` Mitigate RobotShop Problem` click on the three dots at the end of the line
+* Click `Edit`
+
+	![K8s CNI](./doc/pics/doc60.png)
+	
+* Click on the blue `Publish` button
+
+	![K8s CNI](./doc/pics/doc61.png)
+
+* Repeat for the other Runbooks
+
+<div style="page-break-after: always;"></div>
+
+
+## 3.5 Create Runbook Policy 
+
+
+* In the `AI Manager` "Hamburger" Menu select `Operate`/`Automations`
+* Under `Policies`, click `Create Policy`
+	![K8s CNI](./doc/pics/doc36.png)
+ 
+
+* Select `Assign a runbook to alerts`
+	![K8s CNI](./doc/pics/doc37.png)
+ 
+<div style="page-break-after: always;"></div>
+
+* Name it `Mitigate RobotShop`
+	![K8s CNI](./doc/pics/doc38.png)
+ 
+
+* Under `Condition set1`
+* Select `resource.name` (you can type `name` and select the name field for resources)
+
+	![K8s CNI](./doc/pics/doc39.png)
+ 	
+* Set Operator to `contains`
+
+	![K8s CNI](./doc/pics/doc40.png)
+ 	
+<div style="page-break-after: always;"></div>
+
+* And for `value` you type `mysql` (select `String: mysql`)
+
+	![K8s CNI](./doc/pics/doc41.png)
+ 	
+* Under Runbooks
+* Select the `Mitigate RobotShop Problem` Runbook
+
+	![K8s CNI](./doc/pics/doc43.png)
+
+<div style="page-break-after: always;"></div>
+
+* Under `Select Mapping Type`, select `Use default parameter value` (this has been prefilled by the installer)
+
+	![K8s CNI](./doc/pics/doc44.png)
+ 	
+
+* Click `Create Policy`
+
+
+
+
+## 3.6 Re-Run Kubernetes Integration
+
+In the AI Manager (CP4WAIOPS) 
+
+1. In the `AI Manager` "Hamburger" Menu select `Define`/`Data and tool integrations`
+1. Click `Kubernetes`	
+1. Under `robot-shop`, click on `Run` (with the small play button)
 
 
 <div style="page-break-after: always;"></div>
 
 ---------------------------------------------------------------
-# 5 Event Manager Configuration
+# 4. Slack integration
 ---------------------------------------------------------------
 
-❗ You only have to do this if you have installed EventManager/NOI (As described in Easy Install - Chapter 6). For basic demoing with AI MAnager this is not needed.
+
+For the system to work you need to follow those steps:
+
+1. Create Slack Workspace
+1. Create Slack App
+1. Create Slack Channels
+1. Create Slack Integration
+1. Get the Integration URL
+1. Create Slack App Communications
+1. Slack Reset
+
+<div style="page-break-after: always;"></div>
+
+## 4.1 Create your Slack Workspace
+
+1. Create a Slack workspace by going to https://slack.com/get-started#/createnew and logging in with an email <i>**which is not your IBM email**</i>. Your IBM email is part of the IBM Slack enterprise account and you will not be able to create an independent Slack workspace outside if the IBM slack service. 
+
+  ![slack1](./doc/pics/slackws1.png)
+
+2. After authentication, you will see the following screen:
+
+  ![slack2](./doc/pics/slackws2.png)
+
+3. Click **Create a Workspace** ->
+
+4. Name your Slack workspace
+
+  ![slack3](./doc/pics/slackws3.png)
+
+  Give your workspace a unique name such as aiops-\<yourname\>.
+
+5. Describe the workspace current purpose
+
+  ![slack4](./doc/pics/slackws4.png)
+
+  This is free text, you may simply write “demo for Watson AIOps” or whatever you like.
+
+6. 
+
+  ![slack5](./doc/pics/slackws5.png)
+
+  You may add team members to your new Slack workspace or skip this step.
 
 
+At this point you have created your own Slack workspace where you are the administrator and can perform all the necessary steps to integrate with CP4WAOps.
+
+![slack6](./doc/pics/slackws6.png)
+
+**Note** : This Slack workspace is outside the control of IBM and must be treated as a completely public environment. Do not place any confidential material in this Slack workspace.
+
+<div style="page-break-after: always;"></div>
+
+## 4.2 Create Your Slack App
+
+1. Create a Slack app, by going to https://api.slack.com/apps and clicking `Create New App`. 
+
+   ![slack7](./doc/pics/slack01.png)
 
 
-## 5.1 Create Kubernetes Observer for Event Manager 
-
-This is basically the same as for AI Manager as we need two separate instances of the Topology Manager. 
+2. Select `From an app manifest`
 
 
-* In the `Event Manager` "Hamburger" Menu select `Administration`/`Topology Management`
-* Under `Observer jobs` click `Configure`
-* Click `Add new job`
-* Under `Kubernetes`, click on `Configure`
-* Choose `local` for `Connection Type`
-* Set `Unique ID` to `robot-shop`
-* Set `data_center` to `robot-shop`
-* Under `Additional Parameters`
-* Set `Terminated pods` to `true`
-* Set `Correlate` to `true`
-* Set Namespace to `robot-shop`
-* Under `Job Schedule`
-* Set `Time Interval` to 5 Minutes
-* Click `Save`
+  ![slack7](./doc/pics/slack02.png)
+
+3. Select the appropriate workspace that you have created before and click `Next`
+
+4. Copy and paste the content of this file [./doc/slack/slack-app-manifest.yaml](./slack-app-manifest.yaml).
+
+	Don't bother with the URLs just yet, we will adapt them as needed.
+
+5. Click `Next`
+
+5. Click `Create`
+
+6. Scroll down to Display Information and name your CP4WAIOPS app.
+
+7. You can add an icon to the app (there are some sample icons in the ./tools/4_integrations/slack/icons folder.
+
+8. Click save changes
+
+9. In the `Basic Information` menu click on `Install to Workspace` then click `Allow`
+
+<div style="page-break-after: always;"></div>
+
+## 4.3 Create Your Slack Channels
 
 
+1. In Slack add a two new channels:
+	* aiops-demo-reactive
+	* aiops-demo-proactive
+
+	![slack7](./doc/pics/slack03.png)
 
 
-## 5.2 Create REST Observer to Load Topologies 
+2. Right click on each channel and select `Copy Link`
 
-* In the `Event Manager` "Hamburger" Menu select `Administration`/`Topology Management`
-* Under `Observer jobs` click `Configure`
-* Click `Add new job`
-* Under `REST`, click on `Configure`
-* Choose `bulk_replace` for `Job Type`
-* Set `Unique ID` to `listenJob` (important!)
-* Set `Provider` to `listenJob` 
-* Click `Save`
+	This should get you something like this https://xxxx.slack.com/archives/C021QOY16BW
+	The last part of the URL is the channel ID (i.e. C021QOY16BW)
+	Jot them down for both channels
+	
+3. Under Apps click Browse Apps
+
+	![slack7](./doc/pics/slack13.png)
+
+4. Select the App you just have created
+
+5. Invite the Application to each of the two channels by typing
+
+	```bash
+	@<MyAppname>
+	```
+
+6. Select `Add to channel`
+
+	You shoud get a message from <MyAppname> saying `was added to #<your-channel> by ...`
 
 
+<div style="page-break-after: always;"></div>
 
+## 4.4 Integrate Your Slack App
+
+In the Slack App: 
+
+1. In the `Basic Information` menu get the `Signing Secret` (not the Client Secret!) and jot it down
+
+	![K8s CNI](./doc/pics/doc47.png)
+	
+3. In the `OAuth & Permissions` get the `Bot User OAuth Token` (not the User OAuth Token!) and jot it down
+
+	![K8s CNI](./doc/pics/doc48.png)
+
+In the AI Manager (CP4WAIOPS) 
+
+1. In the `AI Manager` "Hamburger" Menu select `Define`/`Data and tool integrations`
+1. Click `Add connection`
+ 
+	![K8s CNI](./doc/pics/doc14.png)
+	
+1. Under `Slack`, click on `Add Connection`
+	![K8s CNI](./doc/pics/doc45.png)
+
+6. Name it "Slack"
+7. Paste the `Signing Secret` from above
+8. Paste the `Bot User OAuth Token` from above
+
+	![K8s CNI](./doc/pics/doc50.png)
+	
+9. Paste the channel IDs from the channel creation step in the respective fields
+
+	![K8s CNI](./doc/pics/doc49.png)
+	
+	![K8s CNI](./doc/pics/doc52.png)
+		
+		
+
+10. Test the connection and click save
 
 
 
 
 <div style="page-break-after: always;"></div>
 
-## 5.3 🚀 Create Topology 
+## 4.5 Create the Integration URL
 
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `81_Topology Load for Event Manager` to install a base `AI Manager` instance.
+In the AI Manager (CP4WAIOPS) 
 
-❗ Please manually re-run the Kubernetes Observer to make sure that the merge has been done.
+1. Go to `Data and tool integrations`
+2. Under `Slack` click on `1 integration`
+3. Copy out the URL
 
+	![secure_gw_search](./doc/pics/slack04.png)
 
-## 5.4 EventManager Webhook 
-
-Create Webhooks in EventManager for Event injection and incident simulation for the Demo.
-
-The demo scripts (in the `demo` folder) give you the possibility to simulate an outage without relying on the integrations with other systems.
-
-At this time it simulates:
-
-- Git push event
-- Log Events (Humio)
-- Security Events (Falco)
-- Instana Events
-- Metric Manager Events (Predictive)
-- Turbonomic Events
-- CP4MCM Synthetic Selenium Test Events
-
+This is the URL you will be using for step 6.
 
 
 <div style="page-break-after: always;"></div>
 
+## 4.6 Create Slack App Communications
 
-You have to define the following Webhook in EventManager (NOI): 
+Return to the browser tab for the Slack app. 
 
-* `Administration` / `Integration with other Systems`
-* `Incoming` / `New Integration`
-* `Webhook`
-* Name it `Demo Generic`
-* Jot down the WebHook URL and copy it to the `NETCOOL_WEBHOOK_GENERIC` in the `./tools/01_demo/incident_robotshop-noi.sh`file
-* Click on `Optional event attributes`
-* Scroll down and click on the + sign for `URL`
-* Click `Confirm Selections`
+### 4.6.1 Event Subscriptions
+
+1. Select `Event Subscriptions`.
+
+2. In the `Enable Events` section, click the slider to enable events. 
+
+3. For the Request URL field use the `Request URL` from step 5.
+
+	e.g: `https://<my-url>/aiops/aimanager/instances/xxxxx/api/slack/events`
+
+4. After pasting the value in the field, a *Verified* message should display.
+
+	![slacki3](./doc/pics/slacki3.png)
+
+	If you get an error please check 5.7
+
+5. Verify that on the `Subscribe to bot events` section you got:
+
+	*  `app_mention` and 
+	*  `member_joined_channel` events.
+
+	![slacki4](./doc/pics/slacki4.png)
+
+6. Click `Save Changes` button.
 
 
-Use this json:
+### 4.6.2 Interactivity & Shortcuts
 
-```json
-{
-  "timestamp": "1619706828000",
-  "severity": "Critical",
-  "summary": "Test Event",
-  "nodename": "productpage-v1",
-  "alertgroup": "robotshop",
-  "url": "https://pirsoscom.github.io/grafana-robotshop.html"
-}
+7. Select `Interactivity & Shortcuts`. 
+
+8. In the Interactivity section, click the slider to enable interactivity. For the `Request URL` field, use use the URL from above.
+
+ **There is no automatic verification for this form**
+
+![slacki5](./doc/pics/slacki5.png)
+
+9. Click `Save Changes` button.
+
+### 4.6.3 Slash Commands
+
+Now, configure the `welcome` slash command. With this command, you can trigger the welcome message again if you closed it. 
+
+1. Select  `Slash Commands`
+
+2. Click `Create New Command` to create a new slash command. 
+
+	Use the following values:
+	
+	
+	| Field | Value |
+	| --- | --- |
+	|Command| /welcome|
+	|Request URL|the URL from above|
+	|Short Description| Welcome to Watson AIOps|
+
+3. Click `Save`.
+
+### 4.6.4 Reinstall App
+
+The Slack app must be reinstalled, as several permissions have changed. 
+
+1. Select `Install App` 
+2. Click `Reinstall to Workspace`
+
+Once the workspace request is approved, the Slack integration is complete. 
+
+If you run into problems validating the `Event Subscription` in the Slack Application, see 5.2
+
+<div style="page-break-after: always;"></div>
+
+<div style="page-break-after: always;"></div>
+
+## 4.7 Create valid CP4WAIOPS Certificate (optional)
+
+Installer should aready have done this.
+
+But if there still are problems, you can directly run: 
+
+```bash
+ansible-playbook ./ansible/31_aimanager-create-valid-ingress-certificates.yaml
 ```
 
-Fill out the following fields and save:
-
-* Severity: `severity`
-* Summary: `summary`
-* Resource name: `nodename`
-* Event type: `alertgroup`
-* Url: `url`
-* Description: `"URL"`
-
-Optionnally you can also add `Expiry Time` from `Optional event attributes` and set it to a convenient number of seconds (just make sure that you have time to run the demo before they expire.
 
 <div style="page-break-after: always;"></div>
 
-## 5.5 Create custom Filter and View in EventManager 
-
-### 5.5.1 Filter 
-
-Duplicate the `Default` filter and set to global.
-
-* Name: AIOPS
-* Logic: **Any** (!)
-* Filter:
-	* AlertGroup = 'CEACorrelationKeyParent'
-	* AlertGroup = 'robot-shop'
-
-#### 11.1.5.2 View 
-
-Duplicate the `Example_IBM_CloudAnalytics` View and set to global.
+## 4.8 Slack Reset
 
 
-* Name: AIOPS
+### 4.8.1 Get the User OAUTH Token
 
-Configure to your likings.
+This is needed for the reset scripts in order to empty/reset the Slack channels.
+
+This is based on [Slack Cleaner2](https://github.com/sgratzl/slack_cleaner2).
+You might have to install this:
+
+```bash
+pip3 install slack-cleaner2
+```
+#### Reset reactive channel 
+
+In your Slack app
+
+1. In the `OAuth & Permissions` get the `User OAuth Token` (not the Bot User OAuth Token this time!) and jot it down
+
+In file `./tools/98_reset/13_reset-slack.sh`
+
+2. Replace `not_configured` for the `SLACK_TOKEN` parameter with the token 
+3. Adapt the channel name for the `SLACK_REACTIVE` parameter
 
 
-## 5.6 Create grouping Policy 
+#### Reset proactive channel 
 
-* NetCool Web Gui --> `Insights` / `Scope Based Grouping`
-* Click `Create Policy`
-* `Action` select fielt `Alert Group`
-* Toggle `Enabled` to `On`
-* Save
+In your Slack app
 
-<div style="page-break-after: always;"></div>
+1. In the `OAuth & Permissions` get the `User OAuth Token` (not the Bot User OAuth Token this time!) and jot it down (same token as above)
 
-## 5.7 Create EventManager/NOI Menu item - Open URL 
+In file `./tools/98_reset/14_reset-slack-changerisk.sh`
 
-in the Netcool WebGUI
+2. Replace `not_configured` for the `SLACK_TOKEN` parameter with the token 
+3. Adapt the channel name for the `SLACK_PROACTIVE` parameter
 
-* Go to `Administration` / `Tool Configuration`
-* Click on `LaunchRunbook`
-* Copy it (the middle button with the two sheets)
-* Name it `Launch URL`
-* Replace the Script Command with the following code
 
-	```javascript
-	var urlId = '{$selected_rows.URL}';
-	
-	if (urlId == '') {
-	    alert('This event is not linked to an URL');
-	} else {
-	    var wnd = window.open(urlId, '_blank');
-	}
-	```
-* Save
 
-Then 
+### 4.8.2 Perform Slack Reset
 
-* Go to `Administration` / `Menu Configuration`
-* Select `alerts`
-* Click on `Modify`
-* Move Launch URL to the right column
-* Save
+Call either of the scripts above to reset the channel:
 
-<div style="page-break-after: always;"></div>
+```bash
 
+./tools/98_reset/13_reset-slack.sh
+
+or
+
+./tools/98_reset/14_reset-slack-changerisk.sh
+
+```
 
 
 ---------------------------------------------------------------
-# 6 Runbook Configuration
+# 5. Demo the Solution
 ---------------------------------------------------------------
 
 
-## 6.1 Configure AWX 
 
-There is some demo content available to RobotShop.
-
-1. Log in to AWX
-2. Add a new Project
-	1. Name it `DemoCP4WAIOPS`
-	1. Source Control Credential Type to `Git`
-	1. Set source control URL to `https://github.com/niklaushirt/ansible-demo`
-	2. Save
-	
-1. Add new Job Template
-	1. Name it `Mitigate Robotshop Ratings Outage`
-	2. Select Inventory `Demo Inventory`
-	3. Select Project `DemoCP4WAIOPS`
-	4. Select Playbook `cp4waiops/robotshop-restart/start-ratings.yaml`
-	5. Select` Prompt on launch` for `Variables`  ❗
-	2. Save
-
-
-
-## 6.2 Configure AWX Integration 
-
-In EventManager:
-
-1. Select `Administration` / `Integration with other Systems`
-1. Select `Automation type` tab
-1. For `Ansible Tower` click  `Configure`
-2. Enter the URL and credentials for your AWX instance (you can use the defautl `admin` user)
-3. Click Save
-
-<div style="page-break-after: always;"></div>
-
-## 6.3 Configure Runbook 
-
-In EventManager:
-
-1. Select `Automations` / `Runbooks`
-1. Select `Library` tab
-1. Click  `New Runbook`
-1. Name it `Mitigate Robotshop Ratings Outage`
-1. Click `Add automated Step`
-2. Select the `Mitigate Robotshop Ratings Outage` Job
-3. Click `Select this automation`
-4. Select `New Runbook Parameter`
-5. Name it `ClusterCredentials`
-6. Input the login credentials in JSON Format (get the URL and token from the 20_get_logins.sh script)
-
-	```json
-	{     
-		"my_k8s_apiurl": "https://c117-e.xyz.containers.cloud.ibm.com:12345",
-		"my_k8s_apikey": "PASTE YOUR API KEY"
-	}
-	```
-7. Click Save
-7. Click Publish
-
-
-Now you can test the Runbook by clicking on `Run`.
-
-<div style="page-break-after: always;"></div>
-
-## 6.4 Add Runbook Triggers 
-
-1. Select `Automations` / `Runbooks`
-1. Select `Triggers` tab
-1. Click  `New Trigger `
-1. Name it `Mitigate Robotshop Ratings Outage`
-1. Add conditions:
-   * Conditions
-	* Name: RobotShop
-	* Attribute: Node
-	* Operator: Equals
-	* Value: mysql-instana or mysql-predictive
-1. Click `Run Test`
-2. You should get an Event `[Instana] Robotshop available replicas is less than desired replicas - Check conditions and error events - ratings`
-3. Select `Mitigate RobotShop Problem`
-4. Click `Select This Runbook`
-5. Toggle `Execution` / `Automatic` to `off`
-6. Click `Save`
-
-
-<div style="page-break-after: always;"></div>
-
-
-
-
----------------------------------------------------------------
-# 7 Demo the Solution
----------------------------------------------------------------
-
-## 7.1 Simulate incident - Demo UI
-
-> ❗**In order to use the DEMO UI, you have to have followed through all the steps in [AI Manager Configuration](#4-ai-manager-configuration). Notably Configuring Topology, Integrations and having run the Models Training.**
-
-### 7.1.1 Install Demo UI
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `18_Install CP4WAIOPS Demo UI` to install the `Demo UI` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
-
-## 7.1.2 Simulate incident - Demo UI
-
-1. Run `./tools/20_get_logins.sh` to get the URL and Login Token.
-1. Open the URL and enter the Token.
-	![](./doc/pics/demoui1.png)
-1. Click on Configuration
-1. Verify that you have `Kafka Topics` shown for Events and Logs
-	![](./doc/pics/demoui2.png)
-1. Click `Back`
-1. Now you can use the buttons to simulate:
-
-	* Only Events
-	* Only Log Anomalies
-	* or Both
-	![](./doc/pics/demoui1.png)
-
-1. The UI will confirm that the incident creation has been launched
-	![](./doc/pics/demoui3.png)
-
-
-
-## 7.2 Simulate incident - Command Line
+## 5.1 Simulate incident - Command Line
 
 **Make sure you are logged-in to the Kubernetes Cluster first** 
 
@@ -1023,376 +831,9 @@ In the terminal type
 ./tools/01_demo/incident_robotshop.sh
 ```
 
-This will delete all existing Alerts and inject pre-canned event and logs to create a story.
+This will delete all existing Alerts/Stories and inject pre-canned event, metrics and logs to create a story.
 
 ℹ️  Give it a minute or two for all events and anomalies to arrive in Slack.
+ℹ️  You might have to run the script 3-4 times for the log anomalies to start appearing.
 
 
-
-
-<div style="page-break-after: always;"></div>
-
-
-
-
----------------------------------------------------------------
-# 8 Additional Configuration
----------------------------------------------------------------
-
-## 8.1 Setup remote Kubernetes Observer
-
-
-
-### 8.1.1. Get Kubernetes Cluster Access Details
-
-As part of the kubernetes observer, it is required to communicate with the target cluster. So it is required to have the URL and Access token details of the target cluster. 
-
-Do the following.
-
-
-#### 8.1.1.1. Login
-
-Login into the remote Kubernetes cluster on the Command Line.
-
-#### 8.1.1.2. Access user/token 
-
-
-Run the following:
-
-```
-./tools/97_addons/k8s-remote/remote_user.sh
-```
-
-This will create the remote user if it does not exist and print the access token (also if you have already created).
-
-Please jot this down.
-
-
-
-### 8.1.1. Create Kubernetes Observer Connection
-
-
-
-* In the `AI Manager` "Hamburger" Menu select `Operate`/`Data and tool integrations`
-* Click `Add connection`
-* Under `Kubernetes`, click on `Add Integration`
-* Click `Connect`
-* Name it `RobotShop`
-* Data Center `demo`
-* Click `Next`
-* Choose `Load` for Connection Type
-* Input the URL you have gotten from the step above in `Kubernetes master IP address` (without the https://)
-* Input the port for the URL you have gotten from the step above in `Kubernetes API port`
-* Input the `Token` you have gotten from the step above
-* Set `Trust all certificates by bypassing certificate verification` to `On`
-* Set `Hide pods that have been terminated` to `On`
-* Set `Correlate analytics events on the namespace groups created by this job` to `On`
-* Set Namespace to `robot-shop`
-* Click `Next`
-* Click `Done`
-
-
-![](./doc/pics/k8s-remote.png)
-
-
-
-<div style="page-break-after: always;"></div>
-
-
----------------------------------------------------------------
-
-# 9. TROUBLESHOOTING
----------------------------------------------------------------
-
-
-## 9.1 Mitigation Job
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `91_Debug Patch`
-2. The Job will start applying all the known workarounds to get the instance up and running
-2. Wait until the Job has finished 
-
-
-## 9.2 Check with script
-
-❗ There is a new script that can help you automate some common problems in your CP4WAIOPS installation.
-
-Just run:
-
-```
-./tools/10_debug_install.sh
-```
-
-and select `Option 1`
-
-
-## 9.3 Pods in Crashloop
-
-If the evtmanager-topology-merge and/or evtmanager-ibm-hdm-analytics-dev-inferenceservice are crashlooping, apply the following patches. I have only seen this happen on ROKS.
-
-```bash
-export WAIOPS_NAMESPACE=cp4waiops
-
-oc patch deployment evtmanager-topology-merge -n $WAIOPS_NAMESPACE --patch-file ./yaml/waiops/pazch/topology-merge-patch.yaml
-
-
-oc patch deployment evtmanager-ibm-hdm-analytics-dev-inferenceservice -n $WAIOPS_NAMESPACE --patch-file ./yaml/waiops/patch/evtmanager-inferenceservice-patch.yaml
-```
-
-
-<div style="page-break-after: always;"></div>
-
-## 9.4 Pods with Pull Error
-
-If the ir-analytics or cassandra job pods are having pull errors, apply the following patches. 
-
-```bash
-export WAIOPS_NAMESPACE=cp4waiops
-
-kubectl patch -n $WAIOPS_NAMESPACE serviceaccount aiops-topology-service-account -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
-kubectl patch -n $WAIOPS_NAMESPACE serviceaccount aiops-ir-analytics-spark-worker -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
-kubectl patch -n $WAIOPS_NAMESPACE serviceaccount aiops-ir-analytics-spark-pipeline-composer -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
-kubectl patch -n $WAIOPS_NAMESPACE serviceaccount aiops-ir-analytics-spark-master -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
-kubectl patch -n $WAIOPS_NAMESPACE serviceaccount aiops-ir-analytics-probablecause -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
-kubectl patch -n $WAIOPS_NAMESPACE serviceaccount aiops-ir-analytics-classifier -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
-kubectl patch -n $WAIOPS_NAMESPACE serviceaccount aiops-ir-lifecycle-eventprocessor-ep -p '{"imagePullSecrets": [{"name": "ibm-entitlement-key"}]}'
-oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep ImagePull|awk '{print$1}') -n $WAIOPS_NAMESPACE
-
-
-```
-
-
-## 9.5 Camel-K Handlers Error
-
-If the scm-handler or snow-handler pods are not coming up, apply the following patches. 
-
-```bash
-export WAIOPS_NAMESPACE=cp4waiops
-
-oc patch vaultaccess/ibm-vault-access -p '{"spec":{"token_period":"760h"}}' --type=merge -n $WAIOPS_NAMESPACE
-oc delete pod $(oc get po -n $WAIOPS_NAMESPACE|grep 0/| grep -v "Completed"|awk '{print$1}') -n $WAIOPS_NAMESPACE
-
-```
-
-
-
-
-## 9.6 Slack integration not working
-
-See [here](#432-create-valid-cp4waiops-certificate)
-
-<div style="page-break-after: always;"></div>
-
-
-
-## 9.7 Check if data is flowing
-
-### 9.7.1 Check Log injection
-
-To check if logs are being injected through the demo script:
-
-1. Launch 
-
-	```bash
-	./tools/22_monitor_kafka.sh
-	```
-2. Select option 4
-
-You should see data coming in.
-
-### 9.7.2 Check Events injection
-
-To check if events are being injected through the demo script:
-
-1. Launch 
-
-	```bash
-	./tools/22_monitor_kafka.sh
-	```
-2. Select option 3
-
-You should see data coming in.
-
-### 9.7.3 Check Stories being generated
-
-To check if stories are being generated:
-
-1. Launch 
-
-	```bash
-	./tools/22_monitor_kafka.sh
-	```
-2. Select option 2
-
-You should see data being generated.
-
-<div style="page-break-after: always;"></div>
-
-## 9.8 Docker Pull secret
-
-####  ❗⚠️ Make a copy of the secret before modifying 
-####  ❗⚠️ On ROKS (any version) and before 4.7 you have to restart the worker nodes after the modification  
-
-We learnt this the hard way...
-
-```bash
-oc get secret -n openshift-config pull-secret -oyaml > pull-secret_backup.yaml
-```
-
-or more elegant
-
-```bash
-oc get Secret -n openshift-config pull-secret -ojson | jq 'del(.metadata.annotations, .metadata.creationTimestamp, .metadata.generation, .metadata.managedFields, .metadata.resourceVersion , .metadata.selfLink , .metadata.uid, .status)' > pull-secret_backup.json
-```
-
-In order to avoid errors with Docker Registry pull rate limits, you should add your Docker credentials to the Cluster.
-This can occur especially with Rook/Ceph installation.
-
-* Go to Secrets in Namespace `openshift-config`
-* Open the `pull-secret`Secret
-* Select `Actions`/`Edit Secret` 
-* Scroll down and click `Add Credentials`
-* Enter your Docker credentials
-
-	![](./doc/pics/dockerpull.png)
-
-* Click Save
-
-If you already have Pods in ImagePullBackoff state then just delete them. They will recreate and should pull the image correctly.
-
-
-
-
-<div style="page-break-after: always;"></div>
-
-## 9.9 Monitor ElasticSearch Indexes
-
-At any moment you can run `./tools/28_access_elastic.sh` in a separate terminal window.
-
-This allows you to access ElasticSearch and gives you:
-
-* ES User
-* ES Password
-
-	![](./doc/pics/es0.png)
-	
-
-### 9.9.1 Monitor ElasticSearch Indexes from Firefox
-
-I use the [Elasticvue](https://addons.mozilla.org/en-US/firefox/addon/elasticvue/) Firefox plugin.
-
-Follow these steps to connects from Elasticvue:
-
-- Select `Add Cluster` 
-	![](./doc/pics/es1.png)
-
-<div style="page-break-after: always;"></div>
-
-- Put in the credentials and make sure you put `https` and not `http` in the URL
-	![](./doc/pics/es2.png)
-- Click `Test Connection` - you will get an error
-- Click on the `https://localhost:9200` URL
-	![](./doc/pics/es3.png)
-	
-<div style="page-break-after: always;"></div>
-
-- This will open a new Tab, select `Accept Risk and Continue` 
-	![](./doc/pics/es4.png)
-- Cancel the login screen and go back to the previous tab
-- Click `Connect` 
-- You should now be connected to your AI Manager ElasticSearch instance 
-	![](./doc/pics/es5.png)
-
-<div style="page-break-after: always;"></div>
-
----------------------------------------------------------------
-# 10. Uninstall
----------------------------------------------------------------
-
-❗ The scritps are coming from here [https://github.com/IBM/cp4waiops-samples.git](https://github.com/IBM/cp4waiops-samples.git)
-
-If you run into problems check back if there have been some updates.
-
-
-I have tested those on 3.1.1 as well and it seemed to work (was able to do a complete reinstall afterwards).
-
-Just run:
-
-```
-./tools/99_uninstall/3.2/uninstall-cp4waiops.props
-```
-
-
-<div style="page-break-after: always;"></div>
-
----------------------------------------------------------------
-# 11 Service Now integration
----------------------------------------------------------------
-
-
-
-## 11.1 Integration 
-
-1. Follow [this](./doc/servicenow/snow-Integrate.md) document to get and configure your Service Now Dev instance with CP4WAIOPS.
-	Stop at `Testing the ServiceNow Integration`. 
-	❗❗Don’t do the training as of yet.
-2. Import the Changes from ./doc/servicenow/import_change.xlsx
-	1. Select `Change - All` from the right-hand menu
-	2. Right Click on `Number`in the header column
-	3. Select Import
-	![](./doc/pics/snow3.png)
-	3. Chose the ./doc/servicenow/import_change.xlsx file and click `Upload`
-	![](./doc/pics/snow4.png)
-	3. Click on `Preview Imported Data`
-	![](./doc/pics/snow5.png)
-	3. Click on `Complete Import` (if there are errors or warnings just ignore them and import anyway)
-	![](./doc/pics/snow6.png)
-	
-3. Import the Incidents from ./doc/servicenow/import_incidents.xlsx
-	1. Select `Incidents - All` from the right-hand menu
-	2. Proceed as for the Changes but for Incidents
-	
-4. Now you can finish configuring your Service Now Dev instance with CP4WAIOPS by [going back](./doc/servicenow/snow-Integrate.md#testing-the-servicenow-integration) and continue whre you left off at `Testing the ServiceNow Integration`. 
-
-
-
-
-<div style="page-break-after: always;"></div>
-
-
-
-
-
-
-
----------------------------------------------------------------
-# 12 ANNEX
----------------------------------------------------------------
-
-## 12.1 Tool Pod
-
-1. Log into AWX
-2. Click on `Templates`
-1. Click on the Rocket 🚀 for entry `17_Install CP4WAIOPS Toolbox` to install a `Tool Pod` instance.
-2. The Job will start with the installation
-2. Wait until the Job has finished 
-
-
-The `Tool Pod` contains several tools:
-
-* kubectl 
-* oc
-* k9s
-* git
-* nano
-* elasticdump
-* kafkacat
-* ansible
-* python
-
-### 12.1.1 Tool Pod Access
-
-```bash
-oc exec -it $(oc get po -n default|grep cp4waiops-tools|awk '{print$1}') -n default -- /bin/bash
-```
