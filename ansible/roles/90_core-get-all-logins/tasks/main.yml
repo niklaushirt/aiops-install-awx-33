@@ -22,6 +22,11 @@
   shell: |
     cat ../LOGINS.txt
   ignore_errors: yes
+  register: logins
 
+
+- name: DEBUG -              🟢 Logins
+  debug: 
+    var: logins.stdout_lines
 
 
